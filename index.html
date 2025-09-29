@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Board Game Club</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 1em; }
+    h1, h2 { text-align: center; }
+    li { margin-bottom: 1em; border: 1px solid #ccc; padding: 0.5em; border-radius: 8px; }
+    button { margin-top: 0.5em; }
+  </style>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+</head>
+<body>
+  <h1>🎲 Board Game Club</h1>
+
+  <h2>Add a Game</h2>
+  <input id="gameName" placeholder="Game name">
+  <input id="maxPlayers" type="number" placeholder="Max players">
+  <button onclick="addGame()">Post Game</button>
+
+  <h2>Upcoming Games</h2>
+  <ul id="gamesList"></ul>
+
+  <script>
+    // 🔹 Replace with YOUR Firebase config from the console
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+      projectId: "YOUR_PROJECT"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function addGame() {
+      const name = document.getElementById('gameName').value;
+      const max = parseInt(document.getElementById('maxPlayers').value);
+      if (!name || !max) return alert("Please fill in both fields!");
+      db.ref('games').push({ name, max, players: [] });
+      document.getElementById('gameName').value = "";
+      document.getElementById('maxPlayers').value = "";
+    }
+
+    function joinGame(key) {
+      const player = prompt("Enter your name:");
+      if (!player) return;
+      const gameRef = db.ref('games/' + key + '/players');
+      gameRef.once('value', snap => {
+        let players = snap.val() || [];
+        if (players.includes(player)) {
+          alert("You're already signed up!");
+          return;
+        }
+        db.ref('games/' + key + '/max').once('value', maxSnap => {
+          if (players.length < maxSnap.val()) {
+            players.push(player);
+            gameRef.set(players);
+          } else {
+            alert("Sorry, this game is full!");
+          }
+        });
+      });
+    }
+
+    db.ref('games').on('value', snapshot => {
+      const games = snapshot.val();
+      const list = document.getElementById('gamesList');
+      list.innerHTML = "";
+      for (let key in games) {
+        const g = games[key];
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <strong>${g.name}</strong> (Max: ${g.max})<br>
+          Players: ${g.players ? g.players.join(", ") : "None yet"}
+          <br><button onclick="joinGame('${key}')">Join</button>
+        `;
+        list.appendChild(li);
+      }
+    });
+  </script>
+</body>
+</html>
