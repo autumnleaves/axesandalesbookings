@@ -1,180 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Board Game Club</title>
+    <meta charset="UTF-8">
+    <title>Board Game Club</title>
 
-  <!-- Material Web Components -->
-  <script type="module" src="https://unpkg.com/@material/mwc-button@0.25.3/mwc-button.js"></script>
-  <script type="module" src="https://unpkg.com/@material/mwc-textfield@0.25.3/mwc-textfield.js"></script>
-  <script type="module" src="https://unpkg.com/@material/mwc-card@0.25.3/mwc-card.js"></script>
-  <script type="module" src="https://unpkg.com/@material/mwc-linear-progress@0.25.3/mwc-linear-progress.js"></script>
+    <script type="module" src="https://unpkg.com/@material/web@1.0.0/all.js?module"></script>
 
-  <style>
-    body {
-      font-family: "Roboto", sans-serif;
-      max-width: 700px;
-      margin: auto;
-      padding: 2rem;
-      background-color: #f5f5f5;
-    }
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            max-width: 700px;
+            margin: auto;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
 
-    h1, h2 {
-      text-align: center;
-      color: #1a73e8;
-    }
+        h1, h2 {
+            text-align: center;
+            color: #1a73e8;
+        }
 
-    mwc-card {
-      display: block;
-      margin-bottom: 1rem;
-      padding: 1rem;
-    }
+        /* Updated tag name for the card component */
+        md-elevated-card {
+            display: block;
+            margin-bottom: 1rem;
+            /* New Card API uses internal padding/styles, but this is a general container style */
+        }
+        
+        /* Apply custom padding and margin to the card content for the look of the old mwc-card */
+        .card-content {
+            padding: 1rem;
+        }
 
-    .players {
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
-      color: #555;
-    }
+        .players {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #555;
+        }
 
-    .input-row {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
+        .input-row {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
 
-    mwc-button, mwc-textfield {
-      display: inline-block;
-    }
-  </style>
+        /* Updated tags for styling. Note: the new components handle display properties well */
+        md-filled-button, md-filled-text-field {
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-  <h1>🎲 Board Game Club</h1>
+    <h1>🎲 Board Game Club</h1>
 
-  <h2>Add a Game</h2>
-  <div class="input-row">
-    <mwc-textfield id="gameName" label="Game Name" outlined></mwc-textfield>
-    <mwc-textfield id="maxPlayers" type="number" label="Max Players" outlined></mwc-textfield>
-    <mwc-button raised label="Post Game" id="postGameBtn"></mwc-button>
-  </div>
+    <h2>Add a Game</h2>
+    <div class="input-row">
+        <md-filled-text-field id="gameName" label="Game Name"></md-filled-text-field>
+        <md-filled-text-field id="maxPlayers" type="number" label="Max Players"></md-filled-text-field>
+        <md-filled-button id="postGameBtn">Post Game</md-filled-button>
+    </div>
 
-  <h2>Upcoming Games</h2>
-  <div id="gamesList"></div>
+    <h2>Upcoming Games</h2>
+    <div id="gamesList"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, set, onValue, get, remove, query, orderByValue, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue, get, remove, query, orderByValue, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAjRxDf55tgjwGlW8vPWPeX5pmo80IdQIo",
-      authDomain: "the-hills-have-dice-67561.firebaseapp.com",
-      projectId: "the-hills-have-dice-67561",
-      storageBucket: "the-hills-have-dice-67561.firebasestorage.app",
-      messagingSenderId: "504957236565",
-      appId: "1:504957236565:web:9df153cbd6d0c5633cabdc"
-    };
+        // Your Firebase config (redacted for security, but kept structure)
+        const firebaseConfig = {
+            apiKey: "AIzaSyAjRxDf55tgjwGlW8vPWPeX5pmo80IdQIo", // Replace with your actual key
+            authDomain: "the-hills-have-dice-67561.firebaseapp.com",
+            projectId: "the-hills-have-dice-67561",
+            storageBucket: "the-hills-have-dice-67561.firebasestorage.app",
+            messagingSenderId: "504957236565",
+            appId: "1:504957236565:web:9df153cbd6d0c5633cabdc"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
-    // Add a game
-    function addGame() {
-      const name = document.getElementById('gameName').value.trim();
-      const max = parseInt(document.getElementById('maxPlayers').value);
+        // Add a game
+        function addGame() {
+            // Text fields now use the .value property directly as before
+            const name = document.getElementById('gameName').value.trim();
+            const max = parseInt(document.getElementById('maxPlayers').value);
 
-      if (!name || isNaN(max) || max <= 0) {
-        alert("Please fill in both fields with valid values!");
-        return;
-      }
+            if (!name || isNaN(max) || max <= 0) {
+                alert("Please fill in both fields with valid values!");
+                return;
+            }
 
-      push(ref(db, 'games'), { name, max, players: [] });
+            push(ref(db, 'games'), { name, max, players: [] });
 
-      document.getElementById('gameName').value = "";
-      document.getElementById('maxPlayers').value = "";
-    }
-
-    // Join a game
-    function joinGame(key) {
-      const player = prompt("Enter your name:");
-      if (!player) return;
-
-      const gameRef = ref(db, 'games/' + key);
-      get(gameRef).then(snapshot => {
-        const game = snapshot.val();
-        const players = game.players ? Object.values(game.players) : [];
-
-        if (players.includes(player)) {
-          alert("You're already signed up!");
-          return;
+            document.getElementById('gameName').value = "";
+            document.getElementById('maxPlayers').value = "";
         }
 
-        if (players.length < game.max) {
-          push(ref(db, 'games/' + key + '/players'), player);
-        } else {
-          alert("Sorry, this game is full!");
+        // Join a game
+        function joinGame(key) {
+            const player = prompt("Enter your name:");
+            if (!player) return;
+
+            const gameRef = ref(db, 'games/' + key);
+            get(gameRef).then(snapshot => {
+                const game = snapshot.val();
+                const players = game.players ? Object.values(game.players) : [];
+
+                if (players.includes(player)) {
+                    alert("You're already signed up!");
+                    return;
+                }
+
+                if (players.length < game.max) {
+                    push(ref(db, 'games/' + key + '/players'), player);
+                } else {
+                    alert("Sorry, this game is full!");
+                }
+            });
         }
-      });
-    }
 
-    // Leave a game
-    function leaveGame(key) {
-      const player = prompt("Enter your name to leave:");
-      if (!player) return;
+        // Leave a game
+        function leaveGame(key) {
+            const player = prompt("Enter your name to leave:");
+            if (!player) return;
 
-      const playersRef = ref(db, 'games/' + key + '/players');
-      const playerQuery = query(playersRef, orderByValue(), equalTo(player));
+            const playersRef = ref(db, 'games/' + key + '/players');
+            const playerQuery = query(playersRef, orderByValue(), equalTo(player));
 
-      get(playerQuery).then(snapshot => {
-        if (!snapshot.exists()) {
-          alert("You are not signed up for this game.");
-          return;
+            get(playerQuery).then(snapshot => {
+                if (!snapshot.exists()) {
+                    alert("You are not signed up for this game.");
+                    return;
+                }
+
+                snapshot.forEach(childSnap => {
+                    remove(ref(db, 'games/' + key + '/players/' + childSnap.key));
+                });
+
+                alert("You have left the game.");
+            });
         }
 
-        snapshot.forEach(childSnap => {
-          remove(ref(db, 'games/' + key + '/players/' + childSnap.key));
+        // Update the games list in real-time
+        const gamesList = document.getElementById('gamesList');
+        onValue(ref(db, 'games'), snapshot => {
+            const games = snapshot.val() || {};
+            gamesList.innerHTML = "";
+
+            for (let key in games) {
+                const g = games[key];
+                // Replaced mwc-card with md-elevated-card
+                const card = document.createElement('md-elevated-card');
+
+                const players = g.players ? Object.values(g.players) : [];
+                const progress = players.length / g.max;
+
+                // Color logic for the progress bar
+                let color = "#4caf50"; // green
+                if (progress >= 1) color = "#f44336"; // red
+                else if (progress >= 0.7) color = "#ff9800"; // orange
+                
+                // Set the custom color property for the linear progress bar
+                card.style.setProperty('--md-linear-progress-track-color', color);
+                card.style.setProperty('--md-linear-progress-active-indicator-color', color);
+
+
+                card.innerHTML = `
+                    <div class="card-content">
+                        <div style="font-weight:bold; font-size:1.1rem;">${g.name}</div>
+                        <div>Max Players: ${g.max}</div>
+                        <div class="players">Players: ${players.length ? players.join(", ") : "None yet"}</div>
+                        
+                        <md-linear-progress value="${progress}" buffer="1" style="margin-top:0.5rem;"></md-linear-progress>
+                        
+                        <div style="margin-top: 1rem;">
+                            <md-filled-button onclick="joinGame('${key}')">Join</md-filled-button>
+                            <md-outlined-button onclick="leaveGame('${key}')">Leave</md-outlined-button>
+                        </div>
+                    </div>
+                `;
+                gamesList.appendChild(card);
+            }
         });
 
-        alert("You have left the game.");
-      });
-    }
+        // Bind Add Game button
+        document.getElementById('postGameBtn').addEventListener('click', addGame);
 
-    // Update the games list in real-time
-    const gamesList = document.getElementById('gamesList');
-    onValue(ref(db, 'games'), snapshot => {
-      const games = snapshot.val();
-      gamesList.innerHTML = "";
-
-      for (let key in games) {
-        const g = games[key];
-        const card = document.createElement('mwc-card');
-
-        const players = g.players ? Object.values(g.players) : [];
-        const progress = players.length / g.max;
-
-        // Color-coded progress
-        let color = "#4caf50"; // green
-        if (progress >= 1) color = "#f44336"; // red
-        else if (progress >= 0.7) color = "#ff9800"; // orange
-
-        card.innerHTML = `
-          <div style="font-weight:bold; font-size:1.1rem;">${g.name}</div>
-          <div>Max Players: ${g.max}</div>
-          <div class="players">Players: ${players.length ? players.join(", ") : "None yet"}</div>
-          <mwc-linear-progress value="${progress}" buffer="1" style="--mdc-theme-primary: ${color}; margin-top:0.5rem;"></mwc-linear-progress>
-          <mwc-button raised label="Join" onclick="joinGame('${key}')"></mwc-button>
-          <mwc-button outlined label="Leave" onclick="leaveGame('${key}')"></mwc-button>
-        `;
-        gamesList.appendChild(card);
-      }
-    });
-
-    // Bind Add Game button
-    document.getElementById('postGameBtn').addEventListener('click', addGame);
-
-    // Expose globally for buttons
-    window.joinGame = joinGame;
-    window.leaveGame = leaveGame;
-  </script>
+        // Expose globally for dynamically created buttons (This was already correct!)
+        window.joinGame = joinGame;
+        window.leaveGame = leaveGame;
+    </script>
 </body>
 </html>
