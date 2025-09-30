@@ -45,7 +45,28 @@ md-elevated-card {
     box-sizing: border-box;
 }
 
-/* Comment Section Styling (Optional but recommended) */
+/* 🚀 COMMENT COUNTER BADGE STYLES */
+.comment-badge {
+    position: absolute;
+    top: 0; 
+    right: 0; 
+    transform: translate(30%, -30%); /* Fine-tune positioning */
+    
+    background-color: #f44336; /* Red notification color */
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px; /* Pill shape */
+    min-width: 10px;
+    text-align: center;
+    line-height: 1.2;
+    pointer-events: none; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+/* Comment Section Styling */
 .comment-entry {
     border-bottom: 1px dashed #eee;
     padding: 4px 0;
