@@ -24,7 +24,6 @@
         md-elevated-card {
             display: block;
             margin-bottom: 1rem;
-            /* New Card API uses internal padding/styles, but this is a general container style */
         }
         
         /* Apply custom padding and margin to the card content for the look of the old mwc-card */
@@ -46,7 +45,7 @@
             flex-wrap: wrap;
         }
 
-        /* Updated tags for styling. Note: the new components handle display properties well */
+        /* Updated tags for styling */
         md-filled-button, md-filled-text-field {
             display: inline-block;
         }
@@ -69,9 +68,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue, get, remove, query, orderByValue, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Your Firebase config (redacted for security, but kept structure)
+        // IMPORTANT: Replace these with your ACTUAL Firebase Config details!
         const firebaseConfig = {
-            apiKey: "AIzaSyAjRxDf55tgjwGlW8vPWPeX5pmo80IdQIo", // Replace with your actual key
+            apiKey: "AIzaSyAjRxDf55tgjwGlW8vPWPeX5pmo80IdQIo",
             authDomain: "the-hills-have-dice-67561.firebaseapp.com",
             projectId: "the-hills-have-dice-67561",
             storageBucket: "the-hills-have-dice-67561.firebasestorage.app",
@@ -82,28 +81,21 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-// Before (Problematic):
-// push(ref(db, 'games'), { name, max, players: [] });
+        // Add a game
+        function addGame() {
+            const name = document.getElementById('gameName').value.trim();
+            const max = parseInt(document.getElementById('maxPlayers').value);
 
-// 🛠️ CORRECTED JavaScript:
-function addGame() {
-    const name = document.getElementById('gameName').value.trim();
-    const max = parseInt(document.getElementById('maxPlayers').value);
+            if (!name || isNaN(max) || max <= 0) {
+                alert("Please fill in both fields with valid values!");
+                return;
+            }
 
-    if (!name || isNaN(max) || max <= 0) {
-        alert("Please fill in both fields with valid values!");
-        return;
-    }
+            // CORRECTED: Initialize 'players' as an empty object {}
+            push(ref(db, 'games'), { name, max, players: {} });
 
-    // 🏆 THIS IS THE CORRECTED LINE: 
-    // Initialize 'players' as an empty object {} instead of an empty array [].
-    // This is required for Firebase Realtime Database to save the game correctly
-    // and satisfy the security rules.
-    push(ref(db, 'games'), { name, max, players: {} });
-
-    document.getElementById('gameName').value = "";
-    document.getElementById('maxPlayers').value = "";
-}
+            document.getElementById('gameName').value = "";
+            document.getElementById('maxPlayers').value = "";
         }
 
         // Join a game
@@ -114,6 +106,9 @@ function addGame() {
             const gameRef = ref(db, 'games/' + key);
             get(gameRef).then(snapshot => {
                 const game = snapshot.val();
+                
+                // CRITICAL FIX: Ensure game.players is treated as an object/map,
+                // and correctly extract player names (the values of the object).
                 const players = game.players ? Object.values(game.players) : [];
 
                 if (players.includes(player)) {
@@ -122,6 +117,7 @@ function addGame() {
                 }
 
                 if (players.length < game.max) {
+                    // Push to the players sub-path
                     push(ref(db, 'games/' + key + '/players'), player);
                 } else {
                     alert("Sorry, this game is full!");
@@ -135,6 +131,7 @@ function addGame() {
             if (!player) return;
 
             const playersRef = ref(db, 'games/' + key + '/players');
+            // Query for the specific key/value pair that holds the player's name
             const playerQuery = query(playersRef, orderByValue(), equalTo(player));
 
             get(playerQuery).then(snapshot => {
@@ -144,6 +141,7 @@ function addGame() {
                 }
 
                 snapshot.forEach(childSnap => {
+                    // Remove the specific auto-generated key that contains the player's name
                     remove(ref(db, 'games/' + key + '/players/' + childSnap.key));
                 });
 
@@ -154,14 +152,14 @@ function addGame() {
         // Update the games list in real-time
         const gamesList = document.getElementById('gamesList');
         onValue(ref(db, 'games'), snapshot => {
-            const games = snapshot.val() || {};
+            const games = snapshot.val() || {}; // Use || {} to handle an empty database safely
             gamesList.innerHTML = "";
 
             for (let key in games) {
                 const g = games[key];
-                // Replaced mwc-card with md-elevated-card
                 const card = document.createElement('md-elevated-card');
 
+                // Extract player names from the Firebase object, default to an empty array
                 const players = g.players ? Object.values(g.players) : [];
                 const progress = players.length / g.max;
 
@@ -196,11 +194,9 @@ function addGame() {
         // Bind Add Game button
         document.getElementById('postGameBtn').addEventListener('click', addGame);
 
-        // Expose globally for dynamically created buttons (This was already correct!)
+        // Expose globally for dynamically created buttons (MUST be here for onclick to work)
         window.joinGame = joinGame;
         window.leaveGame = leaveGame;
     </script>
 </body>
 </html>
-
-
