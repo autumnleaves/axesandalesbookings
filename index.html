@@ -24,15 +24,24 @@
   <ul id="gamesList"></ul>
 
   <script>
-    // ✅ Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyBoZQ2O0YUJw2ddcwms1Mc2xGSof0LYNgs",
-      authDomain: "the-hills-have-dice-18bd4.firebaseapp.com",
-      databaseURL: "https://the-hills-have-dice-18bd4-default-rtdb.firebaseio.com/", // <-- add this
-      projectId: "the-hills-have-dice-18bd4",
-      storageBucket: "the-hills-have-dice-18bd4.appspot.com",
-      messagingSenderId: "44954614395",
-      appId: "1:44954614395:web:3a471042f631498a5800de"
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBoZQ2O0YUJw2ddcwms1Mc2xGSof0LYNgs",
+  authDomain: "the-hills-have-dice-18bd4.firebaseapp.com",
+  databaseURL: "https://the-hills-have-dice-18bd4-default-rtdb.firebaseio.com",
+  projectId: "the-hills-have-dice-18bd4",
+  storageBucket: "the-hills-have-dice-18bd4.firebasestorage.app",
+  messagingSenderId: "44954614395",
+  appId: "1:44954614395:web:83720ca0e667c3bc5800de"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
     };
 
     // ✅ Initialize Firebase
@@ -87,3 +96,4 @@
   </script>
 </body>
 </html>
+
