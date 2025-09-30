@@ -61,6 +61,10 @@
         <md-filled-text-field id="maxPlayers" type="number" label="Max Players"></md-filled-text-field>
         <md-filled-button id="postGameBtn">Post Game</md-filled-button>
     </div>
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <md-outlined-button id="clearAllBtn" style="--md-sys-color-primary: #f44336; color: #f44336;">Clear All Games</md-outlined-button>
+    </div>
 
     <h2>Upcoming Games</h2>
     <div id="gamesList"></div>
@@ -81,7 +85,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Add a game
+        // Global cache for games to be used by deleteGame
+        let games = {};
+
+        // Add a game (Host is automatically the first player)
         function addGame() {
             const host = document.getElementById('hostName').value.trim();
             const name = document.getElementById('gameName').value.trim();
@@ -95,7 +102,7 @@
             // Two-step process: 1. Create game node. 2. Add host as the first player.
             const newGameRef = push(ref(db, 'games'));
 
-            // 1. Write the main game data (initialize players as an empty object)
+            // 1. Write the main game data
             set(newGameRef, { name, max, host, players: {} })
                 .then(() => {
                     // 2. Immediately push the host as the first player
@@ -124,7 +131,6 @@
                 
                 const players = game.players ? Object.values(game.players) : [];
 
-                // NEW CHECK: Prevent the host from joining a second time
                 if (player.toLowerCase() === game.host.toLowerCase()) {
                     alert("The host is automatically signed up!");
                     return;
@@ -148,34 +154,76 @@
             const player = prompt("Enter your name to leave:");
             if (!player) return;
 
-            const playersRef = ref(db, 'games/' + key + '/players');
-            const playerQuery = query(playersRef, orderByValue(), equalTo(player));
-
-            get(playerQuery).then(snapshot => {
-                if (!snapshot.exists()) {
-                    alert("You are not signed up for this game.");
-                    return;
-                }
-                
-                // NEW CHECK: Prevent the host from leaving the game entirely
+            const gameRef = ref(db, 'games/' + key);
+            get(gameRef).then(snapshot => {
                 const game = snapshot.val();
+                
+                // Prevent the host from leaving
                 if (player.toLowerCase() === game.host.toLowerCase()) {
-                     alert("The host cannot leave a game they posted. Please delete the game instead.");
+                     alert("The host cannot leave a game they posted. Use the 'Delete' button to cancel the game instead.");
                      return;
                 }
 
-                snapshot.forEach(childSnap => {
-                    remove(ref(db, 'games/' + key + '/players/' + childSnap.key));
-                });
+                const playersRef = ref(db, 'games/' + key + '/players');
+                const playerQuery = query(playersRef, orderByValue(), equalTo(player));
 
-                alert("You have left the game.");
+                get(playerQuery).then(playerSnapshot => {
+                    if (!playerSnapshot.exists()) {
+                        alert("You are not signed up for this game.");
+                        return;
+                    }
+
+                    playerSnapshot.forEach(childSnap => {
+                        remove(ref(db, 'games/' + key + '/players/' + childSnap.key));
+                    });
+
+                    alert("You have left the game.");
+                });
             });
+        }
+        
+        // NEW: Delete a single game (Cancellation)
+        function deleteGame(key, hostName) {
+            const confirmer = prompt("Enter your name to confirm deletion of this game:");
+            
+            if (!confirmer) return;
+            
+            // Check if the person confirming is the host
+            if (confirmer.toLowerCase() !== hostName.toLowerCase()) {
+                alert("Only the host (" + hostName + ") can delete this game.");
+                return;
+            }
+
+            // Using the cached games object
+            if (confirm(`Are you sure you want to cancel the game: ${games[key].name}?`)) {
+                remove(ref(db, 'games/' + key))
+                    .then(() => {
+                        alert("Game deleted successfully.");
+                    })
+                    .catch(error => {
+                        alert("Error deleting game: " + error.message);
+                    });
+            }
+        }
+        
+        // NEW: Clear all games (Cleanup)
+        function clearAllGames() {
+            if (confirm("WARNING: This will delete ALL games. Are you sure you want to clear the list?")) {
+                // Remove the entire 'games' node
+                remove(ref(db, 'games'))
+                    .then(() => {
+                        alert("All games cleared successfully.");
+                    })
+                    .catch(error => {
+                        alert("Error clearing games: " + error.message);
+                    });
+            }
         }
 
         // Update the games list in real-time
         const gamesList = document.getElementById('gamesList');
         onValue(ref(db, 'games'), snapshot => {
-            const games = snapshot.val() || {}; 
+            games = snapshot.val() || {}; // Update the global cache
             gamesList.innerHTML = "";
 
             for (let key in games) {
@@ -207,6 +255,13 @@
                         <div style="margin-top: 1rem;">
                             <md-filled-button onclick="joinGame('${key}')">Join</md-filled-button>
                             <md-outlined-button onclick="leaveGame('${key}')">Leave</md-outlined-button>
+                            
+                            <md-outlined-button 
+                                onclick="deleteGame('${key}', '${g.host}')" 
+                                style="margin-left: 1rem; --md-sys-color-primary: #f44336; color: #f44336;"
+                            >
+                                Delete
+                            </md-outlined-button>
                         </div>
                     </div>
                 `;
@@ -216,10 +271,16 @@
 
         // Bind Add Game button
         document.getElementById('postGameBtn').addEventListener('click', addGame);
+        // NEW: Bind Clear All Games button
+        document.getElementById('clearAllBtn').addEventListener('click', clearAllGames);
+
 
         // Expose globally for dynamically created buttons
         window.joinGame = joinGame;
         window.leaveGame = leaveGame;
+        // NEW: Expose delete functions
+        window.deleteGame = deleteGame;
+        window.clearAllGames = clearAllGames;
     </script>
 </body>
 </html>
