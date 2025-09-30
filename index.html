@@ -82,21 +82,25 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Add a game
-        function addGame() {
-            // Text fields now use the .value property directly as before
-            const name = document.getElementById('gameName').value.trim();
-            const max = parseInt(document.getElementById('maxPlayers').value);
+// Before (Problematic):
+// push(ref(db, 'games'), { name, max, players: [] });
 
-            if (!name || isNaN(max) || max <= 0) {
-                alert("Please fill in both fields with valid values!");
-                return;
-            }
+// 🛠️ CORRECTED JavaScript:
+function addGame() {
+    const name = document.getElementById('gameName').value.trim();
+    const max = parseInt(document.getElementById('maxPlayers').value);
 
-            push(ref(db, 'games'), { name, max, players: [] });
+    if (!name || isNaN(max) || max <= 0) {
+        alert("Please fill in both fields with valid values!");
+        return;
+    }
 
-            document.getElementById('gameName').value = "";
-            document.getElementById('maxPlayers').value = "";
+    // Initialize players as an empty object {} to match Firebase's data model
+    push(ref(db, 'games'), { name, max, players: {} });
+
+    document.getElementById('gameName').value = "";
+    document.getElementById('maxPlayers').value = "";
+}
         }
 
         // Join a game
@@ -195,3 +199,4 @@
     </script>
 </body>
 </html>
+
