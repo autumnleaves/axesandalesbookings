@@ -95,7 +95,10 @@ function addGame() {
         return;
     }
 
-    // Initialize players as an empty object {} to match Firebase's data model
+    // 🏆 THIS IS THE CORRECTED LINE: 
+    // Initialize 'players' as an empty object {} instead of an empty array [].
+    // This is required for Firebase Realtime Database to save the game correctly
+    // and satisfy the security rules.
     push(ref(db, 'games'), { name, max, players: {} });
 
     document.getElementById('gameName').value = "";
@@ -199,4 +202,5 @@ function addGame() {
     </script>
 </body>
 </html>
+
 
