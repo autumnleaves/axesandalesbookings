@@ -26,7 +26,6 @@
             margin-bottom: 1rem;
         }
         
-        /* Apply custom padding and margin to the card content for the look of the old mwc-card */
         .card-content {
             padding: 1rem;
         }
@@ -56,6 +55,8 @@
 
     <h2>Add a Game</h2>
     <div class="input-row">
+        <md-filled-text-field id="hostName" label="Your Name (Host)"></md-filled-text-field>
+
         <md-filled-text-field id="gameName" label="Game Name"></md-filled-text-field>
         <md-filled-text-field id="maxPlayers" type="number" label="Max Players"></md-filled-text-field>
         <md-filled-button id="postGameBtn">Post Game</md-filled-button>
@@ -68,7 +69,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, push, set, onValue, get, remove, query, orderByValue, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // IMPORTANT: Replace these with your ACTUAL Firebase Config details!
         const firebaseConfig = {
             apiKey: "AIzaSyAjRxDf55tgjwGlW8vPWPeX5pmo80IdQIo",
             authDomain: "the-hills-have-dice-67561.firebaseapp.com",
@@ -83,17 +83,23 @@
 
         // Add a game
         function addGame() {
+            // NEW: Get the host name value
+            const host = document.getElementById('hostName').value.trim();
+            
             const name = document.getElementById('gameName').value.trim();
             const max = parseInt(document.getElementById('maxPlayers').value);
 
-            if (!name || isNaN(max) || max <= 0) {
-                alert("Please fill in both fields with valid values!");
+            // UPDATED VALIDATION: Check that the host name is not empty
+            if (!host || !name || isNaN(max) || max <= 0) {
+                alert("Please fill in ALL fields with valid values!");
                 return;
             }
 
-            // CORRECTED: Initialize 'players' as an empty object {}
-            push(ref(db, 'games'), { name, max, players: {} });
+            // UPDATED PUSH: Include the 'host' field in the object pushed to Firebase
+            push(ref(db, 'games'), { name, max, host, players: {} });
 
+            // Clear all input fields
+            document.getElementById('hostName').value = "";
             document.getElementById('gameName').value = "";
             document.getElementById('maxPlayers').value = "";
         }
@@ -107,8 +113,6 @@
             get(gameRef).then(snapshot => {
                 const game = snapshot.val();
                 
-                // CRITICAL FIX: Ensure game.players is treated as an object/map,
-                // and correctly extract player names (the values of the object).
                 const players = game.players ? Object.values(game.players) : [];
 
                 if (players.includes(player)) {
@@ -117,7 +121,6 @@
                 }
 
                 if (players.length < game.max) {
-                    // Push to the players sub-path
                     push(ref(db, 'games/' + key + '/players'), player);
                 } else {
                     alert("Sorry, this game is full!");
@@ -131,7 +134,6 @@
             if (!player) return;
 
             const playersRef = ref(db, 'games/' + key + '/players');
-            // Query for the specific key/value pair that holds the player's name
             const playerQuery = query(playersRef, orderByValue(), equalTo(player));
 
             get(playerQuery).then(snapshot => {
@@ -141,7 +143,6 @@
                 }
 
                 snapshot.forEach(childSnap => {
-                    // Remove the specific auto-generated key that contains the player's name
                     remove(ref(db, 'games/' + key + '/players/' + childSnap.key));
                 });
 
@@ -152,23 +153,20 @@
         // Update the games list in real-time
         const gamesList = document.getElementById('gamesList');
         onValue(ref(db, 'games'), snapshot => {
-            const games = snapshot.val() || {}; // Use || {} to handle an empty database safely
+            const games = snapshot.val() || {}; 
             gamesList.innerHTML = "";
 
             for (let key in games) {
                 const g = games[key];
                 const card = document.createElement('md-elevated-card');
 
-                // Extract player names from the Firebase object, default to an empty array
                 const players = g.players ? Object.values(g.players) : [];
                 const progress = players.length / g.max;
 
-                // Color logic for the progress bar
                 let color = "#4caf50"; // green
                 if (progress >= 1) color = "#f44336"; // red
                 else if (progress >= 0.7) color = "#ff9800"; // orange
                 
-                // Set the custom color property for the linear progress bar
                 card.style.setProperty('--md-linear-progress-track-color', color);
                 card.style.setProperty('--md-linear-progress-active-indicator-color', color);
 
@@ -176,6 +174,9 @@
                 card.innerHTML = `
                     <div class="card-content">
                         <div style="font-weight:bold; font-size:1.1rem;">${g.name}</div>
+                        
+                        <div style="font-size: 0.95rem; color: #777;">Hosted by: ${g.host}</div>
+                        
                         <div>Max Players: ${g.max}</div>
                         <div class="players">Players: ${players.length ? players.join(", ") : "None yet"}</div>
                         
@@ -194,7 +195,7 @@
         // Bind Add Game button
         document.getElementById('postGameBtn').addEventListener('click', addGame);
 
-        // Expose globally for dynamically created buttons (MUST be here for onclick to work)
+        // Expose globally for dynamically created buttons
         window.joinGame = joinGame;
         window.leaveGame = leaveGame;
     </script>
