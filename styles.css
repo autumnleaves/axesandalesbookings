@@ -6,7 +6,7 @@ body {
     margin: auto;
     padding: 2rem;
     background-color: #f5f5f5;
-    /* Add padding to the bottom to prevent the FAB from obscuring content */
+    /* Add padding to the bottom to prevent the FAB (if unhidden) from obscuring content */
     padding-bottom: 80px; 
 }
 
@@ -30,21 +30,13 @@ md-elevated-card {
     color: #555;
 }
 
+/* FIX: Ensure the input row is visible */
 .input-row {
-    /* Hide the old input row since the FAB handles the primary action */
-    display: none; 
+    display: flex;
     gap: 1rem;
     justify-content: center;
     margin-bottom: 1rem;
     flex-wrap: wrap;
-}
-
-/* FAB Styling */
-#postGameFab {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
 }
 
 /* Default Layout for larger screens (Tablet/Desktop) */
@@ -54,6 +46,15 @@ md-elevated-card {
     box-sizing: border-box;
 }
 
+/* FAB Styling - HIDDEN for now since the button is back in the form */
+#postGameFab {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
 /* MEDIA QUERY for Small Screens (Phones) */
 @media (max-width: 600px) {
     body {
@@ -61,13 +62,7 @@ md-elevated-card {
         padding-bottom: 80px;
     }
     
-    /* Ensure the FAB doesn't hug the very edge of the screen */
-    #postGameFab {
-        bottom: 16px;
-        right: 16px;
-    }
-
-    /* Input fields (hidden now, but keeping rules for safety) */
+    /* Input fields stack vertically and take full width on small screens */
     .input-row md-filled-text-field,
     .input-row md-filled-button {
         flex: 1 1 100%;
