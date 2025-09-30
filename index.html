@@ -63,7 +63,7 @@
     </div>
     
     <div style="text-align: center; margin-bottom: 2rem;">
-        <md-outlined-button id="clearAllBtn" style="--md-sys-color-primary: #f44336; color: #f44336;">Clear All Games</md-outlined-button>
+        <md-outlined-button id="clearAllBtn" style="--md-sys-color-primary: #f44336; color: #f44336;">Clear All Games (Admin)</md-outlined-button>
     </div>
 
     <h2>Upcoming Games</h2>
@@ -85,7 +85,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Global cache for games to be used by deleteGame
         let games = {};
 
         // Add a game (Host is automatically the first player)
@@ -182,7 +181,7 @@
             });
         }
         
-        // NEW: Delete a single game (Cancellation)
+        // Delete a single game (Cancellation)
         function deleteGame(key, hostName) {
             const confirmer = prompt("Enter your name to confirm deletion of this game:");
             
@@ -194,7 +193,6 @@
                 return;
             }
 
-            // Using the cached games object
             if (confirm(`Are you sure you want to cancel the game: ${games[key].name}?`)) {
                 remove(ref(db, 'games/' + key))
                     .then(() => {
@@ -206,8 +204,18 @@
             }
         }
         
-        // NEW: Clear all games (Cleanup)
+        // NEW: Clear all games (Cleanup) with Password Protection
         function clearAllGames() {
+            // 🔒 CHANGE THIS TO YOUR ACTUAL PASSWORD 🔒
+            const SECRET_CODE = "thehillshavedice"; 
+            
+            const input = prompt("Enter the secret code to clear ALL games:");
+            
+            if (!input || input !== SECRET_CODE) {
+                alert("Invalid code. Clear All operation cancelled.");
+                return;
+            }
+            
             if (confirm("WARNING: This will delete ALL games. Are you sure you want to clear the list?")) {
                 // Remove the entire 'games' node
                 remove(ref(db, 'games'))
@@ -271,14 +279,13 @@
 
         // Bind Add Game button
         document.getElementById('postGameBtn').addEventListener('click', addGame);
-        // NEW: Bind Clear All Games button
+        // Bind Clear All Games button
         document.getElementById('clearAllBtn').addEventListener('click', clearAllGames);
 
 
         // Expose globally for dynamically created buttons
         window.joinGame = joinGame;
         window.leaveGame = leaveGame;
-        // NEW: Expose delete functions
         window.deleteGame = deleteGame;
         window.clearAllGames = clearAllGames;
     </script>
