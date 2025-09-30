@@ -1,0 +1,64 @@
+/* styles.css */
+
+body {
+    font-family: "Roboto", sans-serif;
+    max-width: 700px;
+    margin: auto;
+    padding: 2rem;
+    background-color: #f5f5f5;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #1a73e8;
+}
+
+md-elevated-card {
+    display: block;
+    margin-bottom: 1rem;
+}
+
+.card-content {
+    padding: 1rem;
+}
+
+.players {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.input-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Default Layout for larger screens (Tablet/Desktop) */
+.input-row md-filled-text-field,
+.input-row md-filled-button {
+    flex: 1 1 180px;
+    box-sizing: border-box;
+}
+
+/* NEW MEDIA QUERY for Small Screens (Phones) */
+@media (max-width: 600px) {
+    body {
+        padding: 1rem;
+    }
+
+    /* Force all children of input-row to take full width and stack vertically */
+    .input-row md-filled-text-field,
+    .input-row md-filled-button {
+        flex: 1 1 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Ensure the input-row itself uses the full container width */
+    .input-row {
+        gap: 0;
+        flex-direction: column;
+    }
+}
