@@ -17,7 +17,8 @@
         <md-filled-text-field id="hostName" label="Your Name (Host)"></md-filled-text-field>
         <md-filled-text-field id="gameName" label="Game Name"></md-filled-text-field>
         <md-filled-text-field id="maxPlayers" type="number" label="Max Players"></md-filled-text-field>
-        </div>
+        <md-filled-button id="postGameBtn">Post Game</md-filled-button>
+    </div>
     
     <div style="text-align: center; margin-bottom: 2rem;">
         <md-outlined-button id="clearAllBtn" style="--md-sys-color-primary: #f44336; color: #f44336;">Clear All Games (Admin)</md-outlined-button>
@@ -196,11 +197,11 @@
 
                 const isFull = progress >= 1;
                 const statusText = isFull ? 'FULL' : 'Open Slots';
-                const iconName = isFull ? 'lock' : 'groups'; // 'groups' icon is better than 'group'
+                const iconName = isFull ? 'lock' : 'groups'; 
                 
-                let color = "#4caf50"; // green
-                if (isFull) color = "#f44336"; // red
-                else if (progress >= 0.7) color = "#ff9800"; // orange
+                let color = "#4caf50"; 
+                if (isFull) color = "#f44336"; 
+                else if (progress >= 0.7) color = "#ff9800"; 
                 
                 card.style.setProperty('--md-linear-progress-track-color', color);
                 card.style.setProperty('--md-linear-progress-active-indicator-color', color);
@@ -241,8 +242,7 @@
         });
 
         // Bind buttons
-        // UPDATED: Bind the FAB to the addGame function
-        document.getElementById('postGameFab').addEventListener('click', addGame); 
+        document.getElementById('postGameBtn').addEventListener('click', addGame);
         document.getElementById('clearAllBtn').addEventListener('click', clearAllGames);
 
 
