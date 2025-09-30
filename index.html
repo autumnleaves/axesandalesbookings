@@ -83,25 +83,34 @@
 
         // Add a game
         function addGame() {
-            // NEW: Get the host name value
             const host = document.getElementById('hostName').value.trim();
-            
             const name = document.getElementById('gameName').value.trim();
             const max = parseInt(document.getElementById('maxPlayers').value);
 
-            // UPDATED VALIDATION: Check that the host name is not empty
             if (!host || !name || isNaN(max) || max <= 0) {
                 alert("Please fill in ALL fields with valid values!");
                 return;
             }
 
-            // UPDATED PUSH: Include the 'host' field in the object pushed to Firebase
-            push(ref(db, 'games'), { name, max, host, players: {} });
+            // Two-step process: 1. Create game node. 2. Add host as the first player.
+            const newGameRef = push(ref(db, 'games'));
 
-            // Clear all input fields
-            document.getElementById('hostName').value = "";
-            document.getElementById('gameName').value = "";
-            document.getElementById('maxPlayers').value = "";
+            // 1. Write the main game data (initialize players as an empty object)
+            set(newGameRef, { name, max, host, players: {} })
+                .then(() => {
+                    // 2. Immediately push the host as the first player
+                    const gameKey = newGameRef.key;
+                    push(ref(db, 'games/' + gameKey + '/players'), host)
+                        .then(() => {
+                            // Clear fields only after both writes succeed
+                            document.getElementById('hostName').value = "";
+                            document.getElementById('gameName').value = "";
+                            document.getElementById('maxPlayers').value = "";
+                        });
+                })
+                .catch(error => {
+                    alert("Error posting game: " + error.message);
+                });
         }
 
         // Join a game
@@ -114,6 +123,12 @@
                 const game = snapshot.val();
                 
                 const players = game.players ? Object.values(game.players) : [];
+
+                // NEW CHECK: Prevent the host from joining a second time
+                if (player.toLowerCase() === game.host.toLowerCase()) {
+                    alert("The host is automatically signed up!");
+                    return;
+                }
 
                 if (players.includes(player)) {
                     alert("You're already signed up!");
@@ -140,6 +155,13 @@
                 if (!snapshot.exists()) {
                     alert("You are not signed up for this game.");
                     return;
+                }
+                
+                // NEW CHECK: Prevent the host from leaving the game entirely
+                const game = snapshot.val();
+                if (player.toLowerCase() === game.host.toLowerCase()) {
+                     alert("The host cannot leave a game they posted. Please delete the game instead.");
+                     return;
                 }
 
                 snapshot.forEach(childSnap => {
