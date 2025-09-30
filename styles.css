@@ -6,7 +6,6 @@ body {
     margin: auto;
     padding: 2rem;
     background-color: #f5f5f5;
-    /* Add padding to the bottom to prevent the FAB (if unhidden) from obscuring content */
     padding-bottom: 80px; 
 }
 
@@ -46,7 +45,7 @@ md-elevated-card {
     box-sizing: border-box;
 }
 
-/* FAB Styling - HIDDEN for now since the button is back in the form */
+/* FAB Styling - HIDE the FAB since the button is back in the form */
 #postGameFab {
     display: none;
     position: fixed;
