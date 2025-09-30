@@ -29,7 +29,7 @@ md-elevated-card {
     color: #555;
 }
 
-/* FIX: Ensure the input row is visible */
+/* Ensure the input row is visible and responsive */
 .input-row {
     display: flex;
     gap: 1rem;
@@ -45,7 +45,17 @@ md-elevated-card {
     box-sizing: border-box;
 }
 
-/* FAB Styling - HIDE the FAB since the button is back in the form */
+/* Comment Section Styling (Optional but recommended) */
+.comment-entry {
+    border-bottom: 1px dashed #eee;
+    padding: 4px 0;
+    font-size: 0.9em;
+}
+.comment-entry:last-child {
+    border-bottom: none; /* Remove border from the last comment */
+}
+
+/* HIDE the Floating Action Button */
 #postGameFab {
     display: none;
     position: fixed;
