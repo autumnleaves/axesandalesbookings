@@ -16,7 +16,7 @@
     <div class="input-row">
         <md-filled-text-field id="hostName" label="Your Name (Host)"></md-filled-text-field>
         <md-filled-text-field id="gameName" label="Game Name"></md-filled-text-field>
-        <md-filled-text-field id="maxPlayers" type="number" label="Max Players"></md-filled-text-field>
+        <md-filled-text-field id="maxPlayers" label="Max Players"></md-filled-text-field>
         <md-filled-button id="postGameBtn">Post Game</md-filled-button>
     </div>
     
@@ -51,10 +51,13 @@
         function addGame() {
             const host = document.getElementById('hostName').value.trim();
             const name = document.getElementById('gameName').value.trim();
+            
+            // NOTE: The input field is now a generic text field. 
+            // We use parseInt() to ensure the value is treated as a number.
             const max = parseInt(document.getElementById('maxPlayers').value);
 
             if (!host || !name || isNaN(max) || max <= 0) {
-                alert("Please fill in ALL fields with valid values!");
+                alert("Please fill in ALL fields with valid positive numbers!");
                 return;
             }
 
