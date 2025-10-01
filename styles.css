@@ -85,6 +85,11 @@ md-elevated-card {
     z-index: 1000;
 }
 
+.club-logo {
+    display: block; /* Important: allows margin: auto to center it */
+    margin: 0 auto 20px auto; /* Centers horizontally and adds 20px space below */
+    max-width: 150px; /* Adjust this size as needed for your logo */
+    height: auto;
 /* MEDIA QUERY for Small Screens (Phones) */
 @media (max-width: 600px) {
     body {
