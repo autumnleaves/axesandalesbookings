@@ -1,22 +1,46 @@
 /* styles.css */
 
+/* Define CSS Variables for Reusability (Optional but good practice) */
+:root {
+    --primary-color: #5A554A;       /* Dark brown/olive from logo text */
+    --accent-color: #A2B79A;        /* Light green from mountains */
+    --background-color: #F9F8F5;    /* Off-white from logo's outer ring */
+    --card-background: #FFFFFF;     /* Pure white for card to stand out subtly */
+    --text-dark: #333333;           /* Dark grey for general text */
+    --text-medium: #777777;         /* Medium grey for secondary text */
+    --danger-color: #f44336;        /* Keep red for alerts */
+    --warning-color: #ff9800;       /* Keep orange for warnings */
+}
+
+
 body {
     font-family: "Roboto", sans-serif;
     max-width: 700px;
     margin: auto;
     padding: 2rem;
-    background-color: #f5f5f5;
+    background-color: var(--background-color); /* Updated background */
     padding-bottom: 80px; 
+    color: var(--text-dark); /* Default text color */
+}
+
+/* NEW: Logo Styles */
+.club-logo {
+    display: block; 
+    margin: 0 auto 20px auto; 
+    max-width: 150px; /* Adjust as needed */
+    height: auto;
 }
 
 h1, h2 {
     text-align: center;
-    color: #1a73e8;
+    color: var(--primary-color); /* Updated h1/h2 color */
 }
 
 md-elevated-card {
     display: block;
     margin-bottom: 1rem;
+    background-color: var(--card-background); /* Card background */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
 }
 
 .card-content {
@@ -26,7 +50,7 @@ md-elevated-card {
 .players {
     margin-top: 0.5rem;
     font-size: 0.9rem;
-    color: #555;
+    color: var(--text-medium); /* Updated players text color */
 }
 
 /* Ensure the input row is visible and responsive */
@@ -45,19 +69,48 @@ md-elevated-card {
     box-sizing: border-box;
 }
 
-/* 🚀 COMMENT COUNTER BADGE STYLES */
+/* Customize Material Web Components colors */
+md-filled-button {
+    --md-filled-button-container-color: var(--primary-color); /* Post Game Button */
+    --md-filled-button-label-text-color: white;
+}
+
+md-filled-tonal-button {
+    --md-filled-tonal-button-container-color: var(--accent-color); /* Join/Post Comment Buttons */
+    --md-filled-tonal-button-label-text-color: var(--primary-color);
+}
+
+md-outlined-button {
+    --md-outlined-button-outline-color: var(--primary-color); /* Leave Button outline */
+    --md-outlined-button-label-text-color: var(--primary-color); /* Leave Button text */
+}
+
+/* Special button styles for clear/delete (override the above) */
+#clearAllBtn {
+    --md-sys-color-primary: var(--danger-color); /* Admin Clear All Button */
+    color: var(--danger-color);
+}
+.card-content md-outlined-button[onclick^="deleteGame"] { /* Specific delete button in cards */
+    --md-sys-color-primary: var(--danger-color); 
+    color: var(--danger-color);
+    --md-outlined-button-outline-color: var(--danger-color);
+    --md-outlined-button-label-text-color: var(--danger-color);
+}
+
+
+/* COMMENT COUNTER BADGE STYLES */
 .comment-badge {
     position: absolute;
     top: 0; 
     right: 0; 
-    transform: translate(30%, -30%); /* Fine-tune positioning */
+    transform: translate(30%, -30%); 
     
-    background-color: #f44336; /* Red notification color */
+    background-color: var(--danger-color); /* Red notification color */
     color: white;
     font-size: 0.7rem;
     font-weight: 700;
     padding: 2px 6px;
-    border-radius: 10px; /* Pill shape */
+    border-radius: 10px; 
     min-width: 10px;
     text-align: center;
     line-height: 1.2;
@@ -71,25 +124,27 @@ md-elevated-card {
     border-bottom: 1px dashed #eee;
     padding: 4px 0;
     font-size: 0.9em;
+    color: var(--text-dark);
 }
 .comment-entry:last-child {
-    border-bottom: none; /* Remove border from the last comment */
+    border-bottom: none; 
 }
+#gamesList .comments-section #comments-list {
+    background-color: var(--logo-off-white); /* Lighter background for comment list */
+    border-color: var(--logo-beige); /* Subtle border color */
+}
+
 
 /* HIDE the Floating Action Button */
 #postGameFab {
-    display: none;
+    display: none; /* Keep it hidden */
+    /* original positioning */
     position: fixed;
     bottom: 20px;
     right: 20px;
     z-index: 1000;
 }
 
-.club-logo {
-    display: block; /* Important: allows margin: auto to center it */
-    margin: 0 auto 20px auto; /* Centers horizontally and adds 20px space below */
-    max-width: 150px; /* Adjust this size as needed for your logo */
-    height: auto;
 /* MEDIA QUERY for Small Screens (Phones) */
 @media (max-width: 600px) {
     body {
@@ -97,7 +152,6 @@ md-elevated-card {
         padding-bottom: 80px;
     }
     
-    /* Input fields stack vertically and take full width on small screens */
     .input-row md-filled-text-field,
     .input-row md-filled-button {
         flex: 1 1 100%;
