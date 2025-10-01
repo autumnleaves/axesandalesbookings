@@ -27,7 +27,7 @@ body {
 .club-logo {
     display: block; 
     margin: 0 auto 20px auto; 
-    max-width: 150px; /* Adjust as needed */
+    max-width: 300px; /* Adjust as needed */
     height: auto;
 }
 
